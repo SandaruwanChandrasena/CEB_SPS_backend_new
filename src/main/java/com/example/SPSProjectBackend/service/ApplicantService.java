@@ -1,7 +1,5 @@
 package com.example.SPSProjectBackend.service;
 
-
-
 import com.example.SPSProjectBackend.dto.ApplicantDTO;
 import com.example.SPSProjectBackend.model.Applicant;
 import com.example.SPSProjectBackend.model.Pcesthmt;
@@ -24,14 +22,6 @@ public class ApplicantService {
 
     @Autowired
     private PcesthmtRepository pcesthmtRepository;
-
-    @Transactional
-    public Applicant saveApplicant(Applicant applicant) {
-        if (applicant.getFirstName() == null) {
-            throw new IllegalArgumentException("First name cannot be null");
-        }
-        return applicantRepository.save(applicant);
-    }
 
     // Convert Entity to DTO
     private ApplicantDTO convertToDTO(Applicant applicant) {
@@ -107,124 +97,80 @@ public class ApplicantService {
         return applicant;
     }
 
-    // Get all applicants
     public List<ApplicantDTO> getAllApplicants() {
-        List<Applicant> applicants = applicantRepository.findAll();
-        return applicants.stream().map(this::convertToDTO).collect(Collectors.toList());
+        return applicantRepository.findAll()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
-    // Get applicant by ID
     public Optional<ApplicantDTO> getApplicantById(String idNo) {
-//      Optional<Applicant> applicant = applicantRepository.findById(String.valueOf(Integer.valueOf(idNo)));
-//       return applicant.map(this::convertToDTO);
-        // return applicantRepository.findByIdNo(idNo);
-        try {
-            Long applicantId = Long.parseLong(idNo);
-            Optional<Applicant> applicant = applicantRepository.findById(String.valueOf(applicantId));
-            return applicant.map(this::convertToDTO);
-        } catch (NumberFormatException e) {
-            // Handle the exception
-            throw new IllegalArgumentException("Invalid applicant ID: " + idNo, e);
-        }
+        return applicantRepository.findById(idNo)
+                .map(this::convertToDTO);
     }
 
-    // Save applicant
-    public ApplicantDTO saveApplicant(ApplicantDTO applicantDTO) {
-        Applicant applicant = convertToEntity(applicantDTO);
+    public ApplicantDTO saveApplicant(ApplicantDTO dto) {
+        Applicant applicant = convertToEntity(dto);
         return convertToDTO(applicantRepository.save(applicant));
     }
 
-    // Get applicant info with NIC
-    public Optional<ApplicantDTO> getApplicantByIdNo(String idNo) {
-        Optional<Applicant> applicant = applicantRepository.findByIdNo(idNo);
-        return applicant.map(this::convertToDTO);
-    }
+    public ApplicantDTO updateApplicant(String idNo, ApplicantDTO dto) {
+        Optional<Applicant> existing = applicantRepository.findById(idNo);
 
+        if (existing.isPresent()) {
+            Applicant applicant = existing.get();
 
+            applicant.setFirstName(dto.getFirstName());
+            applicant.setLastName(dto.getLastName());
+            applicant.setStreetAddress(dto.getStreetAddress());
+            applicant.setSuburb(dto.getSuburb());
+            applicant.setCity(dto.getCity());
+            applicant.setPostalCode(dto.getPostalCode());
+            applicant.setEmail(dto.getEmail());
+            applicant.setTelephoneNo(dto.getTelephoneNo());
+            applicant.setMobileNo(dto.getMobileNo());
+            applicant.setCebEmployee(dto.getCebEmployee());
+            applicant.setPreferredLanguage(dto.getPreferredLanguage());
+            applicant.setStatus(dto.getStatus());
+            applicant.setAddUser(dto.getAddUser());
+            applicant.setAddDate(dto.getAddDate());
+            applicant.setAddTime(dto.getAddTime());
+            applicant.setUpdUser(dto.getUpdUser());
+            applicant.setUpdDate(dto.getUpdDate());
+            applicant.setUpdTime(dto.getUpdTime());
+            applicant.setEntitledForLoan(dto.getEntitledForLoan());
+            applicant.setMemberOfSamurdhi(dto.getMemberOfSamurdhi());
+            applicant.setSamurdhiId(dto.getSamurdhiId());
+            applicant.setSharePrice(dto.getSharePrice());
+            applicant.setNoOfShares(dto.getNoOfShares());
+            applicant.setLoanReference(dto.getLoanReference());
+            applicant.setLoanAmount(dto.getLoanAmount());
+            applicant.setCompanyName(dto.getCompanyName());
+            applicant.setDeptId(dto.getDeptId());
+            applicant.setFullName(dto.getFullName());
+            applicant.setPersonalCorporate(dto.getPersonalCorporate());
 
-    // Delete applicant
-    public void deleteApplicant(String idNo) {
-        applicantRepository.deleteById(String.valueOf(Integer.valueOf(idNo)));
-    }
-
-
-    // Update applicant details
-    public ApplicantDTO updateApplicant(String idNo, ApplicantDTO applicantDTO) {
-        // Check if applicant exists
-        Optional<Applicant> existingApplicantOptional = applicantRepository.findById(idNo);
-
-        if (existingApplicantOptional.isPresent()) {
-            Applicant existingApplicant = existingApplicantOptional.get();
-
-            // Update existing applicant fields
-            existingApplicant.setFirstName(applicantDTO.getFirstName());
-            existingApplicant.setLastName(applicantDTO.getLastName());
-            existingApplicant.setStreetAddress(applicantDTO.getStreetAddress());
-            existingApplicant.setSuburb(applicantDTO.getSuburb());
-            existingApplicant.setCity(applicantDTO.getCity());
-            existingApplicant.setPostalCode(applicantDTO.getPostalCode());
-            existingApplicant.setEmail(applicantDTO.getEmail());
-            existingApplicant.setTelephoneNo(applicantDTO.getTelephoneNo());
-            existingApplicant.setMobileNo(applicantDTO.getMobileNo());
-            existingApplicant.setCebEmployee(applicantDTO.getCebEmployee());
-            existingApplicant.setPreferredLanguage(applicantDTO.getPreferredLanguage());
-            existingApplicant.setStatus(applicantDTO.getStatus());
-            existingApplicant.setAddUser(applicantDTO.getAddUser());
-            existingApplicant.setAddDate(applicantDTO.getAddDate());
-            existingApplicant.setAddTime(applicantDTO.getAddTime());
-            existingApplicant.setUpdUser(applicantDTO.getUpdUser());
-            existingApplicant.setUpdDate(applicantDTO.getUpdDate());
-            existingApplicant.setUpdTime(applicantDTO.getUpdTime());
-            existingApplicant.setEntitledForLoan(applicantDTO.getEntitledForLoan());
-            existingApplicant.setMemberOfSamurdhi(applicantDTO.getMemberOfSamurdhi());
-            existingApplicant.setSamurdhiId(applicantDTO.getSamurdhiId());
-            existingApplicant.setSharePrice(applicantDTO.getSharePrice());
-            existingApplicant.setNoOfShares(applicantDTO.getNoOfShares());
-            existingApplicant.setLoanReference(applicantDTO.getLoanReference());
-            existingApplicant.setLoanAmount(applicantDTO.getLoanAmount());
-            existingApplicant.setCompanyName(applicantDTO.getCompanyName());
-            existingApplicant.setDeptId(applicantDTO.getDeptId());
-            existingApplicant.setFullName(applicantDTO.getFullName());
-            existingApplicant.setPersonalCorporate(applicantDTO.getPersonalCorporate());
-
-            // Save and return the updated applicant
-            return convertToDTO(applicantRepository.save(existingApplicant));
+            return convertToDTO(applicantRepository.save(applicant));
         } else {
-            // Applicant not found, throw exception or return an appropriate response
             throw new RuntimeException("Applicant not found with ID: " + idNo);
         }
     }
 
-    //for commissioning
-
-    // ApplicantService.java
-//    public List<ApplicantDTO> getApplicantsByDeptId(String deptId) {
-//        List<Applicant> applicants = applicantRepository.findByDeptId(deptId);
-//        return applicants.stream()
-//                .map(this::convertToDTO)
-//                .collect(Collectors.toList());
-//    }
-
-    //this is for testing purpose of commission applicant
-
+    public void deleteApplicant(String idNo) {
+        applicantRepository.deleteById(idNo);
+    }
 
     public List<ApplicantDTO> getApplicantsByEstimateNo(String estimateNo) {
-        // 1. First get the department ID from the estimate
         Optional<Pcesthmt> estimate = pcesthmtRepository.findById(estimateNo);
 
         if (estimate.isPresent()) {
             String deptId = estimate.get().getId().getDeptId();
-
-            // 2. Now find applicants with this department ID
-            List<Applicant> applicants = applicantRepository.findByDeptId(deptId);
-
-            return applicants.stream()
+            return applicantRepository.findByDeptId(deptId)
+                    .stream()
                     .map(this::convertToDTO)
                     .collect(Collectors.toList());
         }
 
         return Collections.emptyList();
     }
-
-
 }

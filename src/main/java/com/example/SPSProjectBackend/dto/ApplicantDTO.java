@@ -1,7 +1,5 @@
 package com.example.SPSProjectBackend.dto;
 
-
-
 import lombok.Getter;
 import lombok.Setter;
 
