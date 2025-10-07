@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:8095") // Adjust the origin as needed
 @RequestMapping("/api/applicants")
 public class ApplicantController {
 
@@ -18,7 +19,7 @@ public class ApplicantController {
     private ApplicantService applicantService;
 
     @GetMapping
-    public List<ApplicantDTO> getAllApplicants() {
+    public List<ApplicantDTO> getAllApplzicants() {
         return applicantService.getAllApplicants();
     }
 
@@ -40,30 +41,36 @@ public class ApplicantController {
         return "ok";
     }
 
+    // ApplicantController.java
     @PatchMapping("/{idNo}")
-    public ResponseEntity<ApplicantDTO> updateApplicant(@PathVariable String idNo,
-                                                        @RequestBody ApplicantDTO updatedApplicantDTO) {
+    public ResponseEntity<?> updateApplicant(
+            @PathVariable String idNo,
+            @RequestBody ApplicantDTO updatedApplicantDTO) {
         try {
             ApplicantDTO updated = applicantService.updateApplicant(idNo, updatedApplicantDTO);
-            return new ResponseEntity<>(updated, HttpStatus.OK);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());     // 400 for validation/required-field issues
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage()); // 404 if not found
         }
     }
+
 
     @PostMapping("/save")
     public ApplicantDTO createApplicant(@RequestBody ApplicantDTO applicantDTO) {
         return applicantService.saveApplicant(applicantDTO);
     }
 
-    @DeleteMapping("/{idNo}")
-    public ResponseEntity<Void> deleteApplicant(@PathVariable String idNo) {
-        if (applicantService.getApplicantById(idNo).isPresent()) {
-            applicantService.deleteApplicant(idNo);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
-    }
+
+//    @DeleteMapping("/{idNo}")
+//    public ResponseEntity<Void> deleteApplicant(@PathVariable String idNo) {
+//        if (applicantService.getApplicantById(idNo).isPresent()) {
+//            applicantService.deleteApplicant(idNo);
+//            return ResponseEntity.noContent().build();
+//        }
+//        return ResponseEntity.notFound().build();
+//    }
 
     @GetMapping("/{idNo}")
     public ResponseEntity<ApplicantDTO> getApplicantById(@PathVariable String idNo) {
@@ -72,9 +79,9 @@ public class ApplicantController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/by-estimate/{estimateNo}")
-    public ResponseEntity<List<ApplicantDTO>> getApplicantsByEstimateNo(@PathVariable String estimateNo) {
-        List<ApplicantDTO> applicants = applicantService.getApplicantsByEstimateNo(estimateNo);
-        return ResponseEntity.ok(applicants);
-    }
+//    @GetMapping("/by-estimate/{estimateNo}")
+//    public ResponseEntity<List<ApplicantDTO>> getApplicantsByEstimateNo(@PathVariable String estimateNo) {
+//        List<ApplicantDTO> applicants = applicantService.getApplicantsByEstimateNo(estimateNo);
+//        return ResponseEntity.ok(applicants);
+//    }
 }

@@ -5,6 +5,9 @@ import lombok.NonNull;
 import lombok.Setter;
 import java.math.BigDecimal;
 import java.util.Date;
+// at top of file (make sure these imports exist)
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 
 @Entity
 @Getter
@@ -60,8 +63,8 @@ public class Applicant {
     @Column(name = "ADD_USER", length = 10)
     private String addUser;
 
+    @Temporal(TemporalType.TIMESTAMP)          // ⬅️ was DATE — change to TIMESTAMP
     @Column(name = "ADD_DATE")
-    @Temporal(TemporalType.DATE)
     private Date addDate;
 
 
@@ -71,8 +74,8 @@ public class Applicant {
     @Column(name = "UPD_USER", length = 10)
     private String updUser;
 
+    @Temporal(TemporalType.TIMESTAMP)          // ⬅️ was DATE — change to TIMESTAMP
     @Column(name = "UPD_DATE")
-    @Temporal(TemporalType.DATE)
     private Date updDate;
 
     @Column(name = "UPD_TIME", length = 11)
