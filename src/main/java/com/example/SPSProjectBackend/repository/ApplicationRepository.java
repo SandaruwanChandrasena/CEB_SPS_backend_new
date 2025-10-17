@@ -1,43 +1,32 @@
 package com.example.SPSProjectBackend.repository;
 
-import com.example.SPSProjectBackend.dto.ApplicationDTO;
-import com.example.SPSProjectBackend.model.ApplicationModel;
-import com.example.SPSProjectBackend.model.ApplicationModelId;
+import com.example.SPSProjectBackend.model.Application;
+import com.example.SPSProjectBackend.model.ApplicationId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-import org.springframework.data.repository.query.Param;
+
 import java.util.List;
 import java.util.Optional;
 
-@Repository
-public interface ApplicationRepository extends JpaRepository<ApplicationModel, ApplicationModelId> {
-    Optional<ApplicationModel> findById_ApplicationId(String applicationId);
+public interface ApplicationRepository extends JpaRepository<Application, ApplicationId> {
 
-    //This one for application details in commission
-    @Query("SELECT a FROM ApplicationModel a WHERE TRIM(a.deptId) IN :deptIds")
-    List<ApplicationModel> findByDeptIdIn(@Param("deptIds") List<String> deptIds);
+    // All records for an applicationId (ordered)
+    List<Application> findById_ApplicationIdOrderBySubmitDateDesc(String applicationId);
 
+    // All records for an applicant (ordered)
+    List<Application> findByIdNoOrderBySubmitDateDesc(String idNo);
 
-    @Query("SELECT a.applicationNo FROM ApplicationModel a")
-    List<String> findAllApplicationNos();
-
-    @Query("SELECT COUNT(a) > 0 FROM ApplicationModel a WHERE a.applicationNo = :applicationNo")
-    boolean existsByApplicationNo(String applicationNo);
-  
+    // Oracle-safe "latest by applicationId" (works with slashes/dots)
     @Query(value = """
-        SELECT a.APPLICATION_NO, a.DEPT_ID, a.APPLICATION_TYPE, ap.FULL_NAME, a.DESCRIPTION
-        FROM SPSNEW.APPLICATIONS a
-        JOIN SPSNEW.APPLICANT ap ON TRIM(a.ID_NO) = ap.ID_NO
-        JOIN SPSNEW.WIRING_LAND_DETAIL_CON con ON TRIM(a.APPLICATION_ID) = con.APPLICATION_ID
-        JOIN SPSNEW.APPLICATION_REFERENCE ref ON TRIM(a.APPLICATION_ID) = ref.APPLICATION_ID
-        WHERE TRIM(a.APPLICATION_NO) = :applicationNo
-        ORDER BY a.APPLICATION_NO
+        SELECT *
+        FROM (
+          SELECT a.*
+          FROM DACONS16.APPLICATIONS a
+          WHERE a.APPLICATION_ID = :applicationId
+          ORDER BY a.SUBMIT_DATE DESC
+        )
+        WHERE ROWNUM = 1
         """, nativeQuery = true)
-    List<Object[]> findApplicationDetailsByApplicationNo(@Param("applicationNo") String applicationNo);
-
-    @Query("SELECT a.status, COUNT(a) FROM ApplicationModel a WHERE a.deptId = :deptId GROUP BY a.status")
-    List<Object[]> getStatusCountsByDeptId(@Param("deptId") String deptId);
-
+    Optional<Application> findLatestByApplicationId(@Param("applicationId") String applicationId);
 }
